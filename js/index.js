@@ -30,10 +30,10 @@ function getMazeTable(m) {
 
 function showResults(m, title){
 	var $outputDiv = $('<div class="outputDiv"></div>');
-	counts = m.cellCounts()
-	numCellsInSolution = counts['solution'];
-	numCellsInFrontier = counts['frontier'];
-	numCellsVisited = counts['visited'];
+	var counts = m.cellCounts()
+	var numCellsInSolution = counts['solution'];
+	var numCellsInFrontier = counts['frontier'];
+	var numCellsVisited = counts['visited'];
 	// log some data
 	$outputDiv.append('<p>');
 	$outputDiv.append('<b>'+title+'</b><br/>');

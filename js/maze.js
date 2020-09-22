@@ -18,6 +18,8 @@ class MazeCell {
 		this.priority = Infinity;
 	}
 
+	//Question c. This function is used to figure out whether a certain cell
+	//is a WALL cell or a PASSAGEWAY cell in the maze
 	projection() {
 		var projection = '';
 		if (this.type === MazeCellTypes.WALL) {
@@ -47,12 +49,15 @@ class Maze {
 			// store each row as a char array
 			this.maze[i] = this.maze[i].split('');
 
+			//Question a. Each cell in the maze is of type object called MazeCell
 			for (var j = 0; j < this.maze[i].length; j++) {
 				var type = this.maze[i][j];
 				this.maze[i][j] = new MazeCell(i, j, type);
 			}
 		}
 
+		//Question b. The reason these are hard coded in is because the algorithm needs 
+		//to know which cell to start from and where to end.
 		this.start = this.maze[1][0];
 		this.destination = this.maze[this.maze.length - 2][this.maze[0].length - 1];
 	}
@@ -60,6 +65,8 @@ class Maze {
 	/*
 	 * this function determines whether the argument cell meets the destination criteria
 	 */
+	//Question d. This function determines if the next cell in the algorithm meets the
+	//destination criteria, meaning it checks if this is really the next cell in the maze
 	destinationPredicate(cell) {
 		if (this.destination.row === cell.row && this.destination.col == cell.col)
 			return true;
@@ -74,24 +81,28 @@ class Maze {
 	getNeighbors(cell) {
 		var neighbors = [];
 
-		if (cell.row - 1 >= 0 &&
-			this.maze[cell.row - 1][cell.col].type === MazeCellTypes.PASSAGEWAY) {
-			neighbors.push(this.maze[cell.row - 1][cell.col]);
+		//Question e. This one is checking the cell to the right
+		if (cell.col + 1 < this.maze[cell.row].length &&
+			this.maze[cell.row][cell.col + 1].type === MazeCellTypes.PASSAGEWAY) {
+			neighbors.push(this.maze[cell.row][cell.col + 1]);
 		}
 
-		if (cell.col - 1 >= 0 &&
-			this.maze[cell.row][cell.col - 1].type === MazeCellTypes.PASSAGEWAY) {
-			neighbors.push(this.maze[cell.row][cell.col - 1]);
-		}
-
+		//Question e. This one is checking the cell below
 		if (cell.row + 1 < this.maze.length &&
 			this.maze[cell.row + 1][cell.col].type === MazeCellTypes.PASSAGEWAY) {
 			neighbors.push(this.maze[cell.row + 1][cell.col])
 		}
 
-		if (cell.col + 1 < this.maze[cell.row].length &&
-			this.maze[cell.row][cell.col + 1].type === MazeCellTypes.PASSAGEWAY) {
-			neighbors.push(this.maze[cell.row][cell.col + 1]);
+		//Question e. This one is checking the cell above
+		if (cell.row - 1 >= 0 &&
+			this.maze[cell.row - 1][cell.col].type === MazeCellTypes.PASSAGEWAY) {
+			neighbors.push(this.maze[cell.row - 1][cell.col]);
+		}
+
+		//Question e. This one is the checking the cell to the left
+		if (cell.col - 1 >= 0 &&
+			this.maze[cell.row][cell.col - 1].type === MazeCellTypes.PASSAGEWAY) {
+			neighbors.push(this.maze[cell.row][cell.col - 1]);
 		}
 
 		return neighbors;
@@ -117,6 +128,9 @@ class Maze {
 		// create a map to hold cells to parents, set first element's
 		// parents as false (is source cell). Generally, the parents
 		// map will have projection values as keys and objects as values.
+		//Question f. The keys are the projections and the values are the objects
+		//This is necessary to keep track of all the cells beforehand to make
+		//the BFS algorithm accurate
 		var parents = new Array();
 		parents[this.start.projection()] = false;
 
@@ -151,7 +165,7 @@ class Maze {
 					parents[neighbor] = current;
 					// add the neighbor to the queue
 					frontier.push(neighbors[i])
-						// set the neighbor to have a "frotier" type
+					// set the neighbor to have a "frotier" type
 					neighbors[i].type = MazeCellTypes.FRONTIER;
 				}
 			}
@@ -172,6 +186,67 @@ class Maze {
 	 */
 	solveMazeDFS() {
 		// TODO
+
+		// create the queue to hold the cells we have visited but need
+		// to return to explore (we will treat the array like a queue)
+		var frontier = new Array()
+		frontier.push(this.start);
+
+		// create a set to hold the cells we have visited and add the 
+		// first element
+		var visited = new Set();
+		visited.add(this.start.projection())
+
+		// create a map to hold cells to parents, set first element's
+		// parents as false (is source cell). Generally, the parents
+		// map will have projection values as keys and objects as values.
+		var parents = new Array();
+		parents[this.start.projection()] = false;
+
+		// search and continue searching  while there are still items in the queue
+		while (frontier.length >= 1) {
+
+			// get the next element in the queue
+			var current = frontier.pop();
+
+			// mark the next element as visited
+			current.type = MazeCellTypes.VISITED;
+
+			// test to see if it meets the destination criteria
+			if (this.destinationPredicate(current)) {
+				// we've reached the destination! Awesome!
+				break;
+			}
+
+			// get the neighbors of the current cell (passageways)
+			var neighbors = this.getNeighbors(current);
+
+			// one by one, add neighbors to the queue
+			for (var i = 0; i < neighbors.length; i++) {
+
+				var neighbor = neighbors[i].projection();
+
+				// see if we've already visited this cell
+				if (!visited.has(neighbor)) {
+					// if we haven't,  add it to the visited set
+					visited.add(neighbor);
+					// add current as the neighbor's parent
+					parents[neighbor] = current;
+					// add the neighbor to the queue
+					frontier.push(neighbors[i])
+					// set the neighbor to have a "frotier" type
+					neighbors[i].type = MazeCellTypes.FRONTIER;
+				}
+			}
+		}
+
+		// backtrack through each cell's parent and set path cells to type
+		// solution
+		while (current) {
+			current.type = MazeCellTypes.SOLUTION;
+			current = parents[current.projection()];
+		}
+
 	}
 	
 	/*
@@ -219,3 +294,7 @@ class Maze {
 	}
 
 }
+
+//Question 6. The average difference in cells visited is about 482.6
+//Question 7. BFS is better for pathfinding in the average case since
+//it was tested 10 times and BFS always visited less cells than DFS

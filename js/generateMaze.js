@@ -18,7 +18,7 @@ function generateMaze(mazeHeightWidth) {
 		mazeHeightWidth++;
 	}
 	
-	maze = [];
+	var maze = [];
 	var moves = [];
 	for (var i = 0; i < mazeHeightWidth; i++) {
 		maze[i] = [];
@@ -82,7 +82,7 @@ function generateMaze(mazeHeightWidth) {
 	maze[maze.length-2][maze[0].length-1] = MazeCellTypes.PASSAGEWAY;
 	
 	// turn maze into plain text one row at a time, then join with newlines
-	plainTextMaze = [];
+	var plainTextMaze = [];
 	for(var i=0;i<maze.length;i++){
 		plainTextMaze.push(maze[i].join(''));
 	}
